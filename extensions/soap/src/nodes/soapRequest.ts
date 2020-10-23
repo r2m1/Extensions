@@ -158,7 +158,7 @@ export const soapRequestNode = createNodeDescriptor({
 				data: xml
 			  });
 
-			let cleanedResponse = response.data.replace(/\r?\n|\r/g, "");
+			let cleanedResponse = response.data.replace(/\r?\n|\\|\r/g, "");
 
 			if (storeLocation === "context") {
 				api.addToContext(contextKey, cleanedResponse, "simple");
