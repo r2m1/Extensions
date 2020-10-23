@@ -112,10 +112,7 @@ export const listProjectsNode = createNodeDescriptor({
 			  	url: `${domain}public/api/projects/${tags}`,
 			  	headers: {
 				'Content-Type': 'application/json',
-				auth: {
-					username: USER_API_KEY,
-					password: ""
-					},
+				'Authorization': `Basic ${USER_API_KEY}`
 				}
 			});
 

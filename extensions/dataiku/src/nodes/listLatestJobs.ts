@@ -123,10 +123,7 @@ export const listlatestJobsNode = createNodeDescriptor({
 			  	url: `${domain}public/api/projects/${projectKey}}/jobs?limit=${limit}`,
 			  	headers: {
 					'Content-Type': 'application/json',
-				auth: {
-					username: USER_API_KEY,
-					password: ""
-					},
+					'Authorization': `Basic ${USER_API_KEY}`
 				}
 			});
 

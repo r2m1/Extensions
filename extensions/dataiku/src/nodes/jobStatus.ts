@@ -125,11 +125,8 @@ export const jobStatusNode = createNodeDescriptor({
 				method: 'get',
 			  	url: `${domain}public/api/projects/${projectKey}/jobs/${jobId}`,
 			  	headers: {
-				'Content-Type': 'application/json',
-				auth: {
-					username: USER_API_KEY,
-					password: ""
-					},
+					'Content-Type': 'application/json',
+					'Authorization': `Basic ${USER_API_KEY}`
 				}
 			});
 
