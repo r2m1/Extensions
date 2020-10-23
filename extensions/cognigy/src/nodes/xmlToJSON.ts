@@ -1,37 +1,24 @@
 import { createNodeDescriptor, INodeFunctionBaseParams } from "@cognigy/extension-tools";
-const jsonxml = require('jsontoxml');
+const xml2js = require('xml2js');
 
 
-export interface jsonToXMLParams extends INodeFunctionBaseParams {
+export interface xmlToJSONParams extends INodeFunctionBaseParams {
 	config: {
-		jsonInput: any;
+		xmlInput: any;
 		storeLocation: string;
 		contextKey: string;
 		inputKey: string;
 	};
 }
-export const jsonToXMLNode = createNodeDescriptor({
-	type: "jsonToXML",
-	defaultLabel: "JSON To XML",
+export const xmlToJSONNode = createNodeDescriptor({
+	type: "xmlToJSON",
+	defaultLabel: "XML To JSON",
 	fields: [
 		{
-			key: "jsonInput",
-			label: "JSON",
-			description: "The JSON that should be changed to XML.",
-			type: "json",
-			defaultValue: `{
-	"node":"text content",
-	"parent1":[
-		{"name":"taco","text": "beef", "children":{ "salsa":"hot!"}},
-		{"name":"taco","text": "fish taco","attrs":{"mood":"sad"},"children":[
-			{"name":"salsa","text":"mild"},
-			"hi",
-			{"name":"salsa","text":"weak","attrs":{"type":2}}
-		]},
-		{"name":"taco","attrs":"mood"}
-	]
-}
-`,
+			key: "xmlInput",
+			label: "Path to XML",
+			description: "The XML that should be changed to JSON.",
+			type: "cognigyText",
 			params: {
 				required: true
 			}
@@ -59,7 +46,7 @@ export const jsonToXMLNode = createNodeDescriptor({
 			key: "inputKey",
 			type: "cognigyText",
 			label: "Input Key to store Result",
-			defaultValue: "cognigy.xml",
+			defaultValue: "cognigy.json",
 			condition: {
 				key: "storeLocation",
 				value: "input",
@@ -69,7 +56,7 @@ export const jsonToXMLNode = createNodeDescriptor({
 			key: "contextKey",
 			type: "cognigyText",
 			label: "Context Key to store Result",
-			defaultValue: "cognigy.xml",
+			defaultValue: "cognigy.json",
 			condition: {
 				key: "storeLocation",
 				value: "context",
@@ -89,20 +76,33 @@ export const jsonToXMLNode = createNodeDescriptor({
 		},
 	],
 	form: [
-		{ type: "field", key: "jsonInput" },
+		{ type: "field", key: "xmlInput" },
 		{ type: "section", key: "storage" },
 	],
-	function: async ({ cognigy, config }: jsonToXMLParams) => {
+	function: async ({ cognigy, config }: xmlToJSONParams) => {
 		const { api } = cognigy;
-		const { jsonInput, storeLocation, contextKey, inputKey } = config;
+		const { xmlInput, storeLocation, contextKey, inputKey } = config;
 
-		const xml = jsonxml(jsonInput);
+		try {
+			const result = await xml2js.parseStringPromise(xmlInput, { mergeAttrs: true });
 
-		if (storeLocation === "context") {
-			api.addToContext(contextKey, xml, "simple");
-		} else {
-			// @ts-ignore
-			api.addToInput(inputKey, xml);
+			// convert it to a JSON string
+			// const json = JSON.stringify(result, null, 4);
+
+			if (storeLocation === "context") {
+				api.addToContext(contextKey, result, "simple");
+			} else {
+				// @ts-ignore
+				api.addToInput(inputKey, result);
+			}
+		} catch (err) {
+			if (storeLocation === "context") {
+				api.addToContext(contextKey, err, "simple");
+			} else {
+				// @ts-ignore
+				api.addToInput(inputKey, err);
+			}
 		}
+
 	}
 });

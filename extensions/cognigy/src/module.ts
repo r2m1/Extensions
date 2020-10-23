@@ -6,13 +6,15 @@ import { getConversationNode } from "./nodes/getConversation";
 import { cognigyApiConnection } from "./connections/cognigyApiConnection";
 import { intentDisambiguationNode } from "./nodes/intentDisambiguation";
 import { jsonToXMLNode } from "./nodes/jsonToXML";
+import { xmlToJSONNode } from "./nodes/xmlToJSON";
 
 export default createExtension({
 	nodes: [
 		sendEmailWithAttachmentNode,
 		getConversationNode,
 		intentDisambiguationNode,
-		jsonToXMLNode
+		jsonToXMLNode,
+		xmlToJSONNode
 	],
 
 	connections: [
