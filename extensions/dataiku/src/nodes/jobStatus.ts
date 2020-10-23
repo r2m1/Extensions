@@ -1,5 +1,5 @@
 import { createNodeDescriptor, INodeFunctionBaseParams } from "@cognigy/extension-tools";
-import axios from "axios";
+const rp = require('request-promise');
 
 export interface IOfferControlParams extends INodeFunctionBaseParams {
 	config: {
@@ -30,7 +30,7 @@ export const jobStatusNode = createNodeDescriptor({
 		},
 		{
 			key: "projectKey",
-			type: "text",
+			type: "cognigyText",
 			label: "Enter the project key",
 			defaultValue: "",
 			params: {
@@ -39,7 +39,7 @@ export const jobStatusNode = createNodeDescriptor({
 		},
 		{
 			key: "jobId",
-			type: "text",
+			type: "cognigyText",
 			label: "Enter the job Id",
 			defaultValue: "",
 			params: {
@@ -121,20 +121,23 @@ export const jobStatusNode = createNodeDescriptor({
 		const { domain, USER_API_KEY } = connection;
 
 		try {
-			const response = await axios({
-				method: 'get',
-			  	url: `${domain}public/api/projects/${projectKey}/jobs/${jobId}`,
-			  	headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Basic ${USER_API_KEY}`
-				}
+			const response = await rp({
+				method: 'GET',
+			  	uri: `${domain}public/api/projects/${projectKey}/jobs/${jobId}`,
+				auth: {​​
+				'user': `${USER_API_KEY}`,
+				'pass': '',
+				'sendImmediately': false
+				}​​,
+				json: true,
+				resolveWithFullResponse: true
 			});
 
 			if (storeLocation === "context") {
-				api.addToContext(contextKey, response.data, "simple");
+				api.addToContext(contextKey, response, "simple");
 			} else {
 				// @ts-ignore
-				api.addToInput(inputKey, response.data);
+				api.addToInput(inputKey, response);
 			}
 
 		} catch (error) {
@@ -145,6 +148,5 @@ export const jobStatusNode = createNodeDescriptor({
 				api.addToInput(inputKey, error);
 			}
 		}
-
 	}
 });

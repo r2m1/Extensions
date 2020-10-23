@@ -1,5 +1,5 @@
 import { createNodeDescriptor, INodeFunctionBaseParams } from "@cognigy/extension-tools";
-import axios from "axios";
+const rp = require('request-promise');
 
 export interface IOfferControlParams extends INodeFunctionBaseParams {
 	config: {
@@ -32,7 +32,7 @@ export const createProjectNode = createNodeDescriptor({
 		},
 		{
 			key: "projectFolderId",
-			type: "text",
+			type: "cognigyText",
 			label: "Enter the project folder id",
 			defaultValue: "",
 			params: {
@@ -41,7 +41,7 @@ export const createProjectNode = createNodeDescriptor({
 		},
 		{
 			key: "projectKey",
-			type: "text",
+			type: "cognigyText",
 			label: "Enter the project key of the new project",
 			defaultValue: "",
 			params: {
@@ -50,7 +50,7 @@ export const createProjectNode = createNodeDescriptor({
 		},
 		{
 			key: "name",
-			type: "text",
+			type: "cognigyText",
 			label: "Enter the name of the new project",
 			defaultValue: "",
 			params: {
@@ -59,7 +59,7 @@ export const createProjectNode = createNodeDescriptor({
 		},
 		{
 			key: "owner",
-			type: "text",
+			type: "cognigyText",
 			label: "Enter the login of the owner of the new project",
 			defaultValue: "",
 			params: {
@@ -140,13 +140,16 @@ export const createProjectNode = createNodeDescriptor({
 		const { domain, USER_API_KEY } = connection;
 
 		try {
-			const response = await axios({
-				method: 'get',
+			const response = await rp({
+				method: 'GET',
 			  	url: `${domain}public/api/projects?projectFolderId=${projectFolderId}`,
-			  	headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Basic ${USER_API_KEY}`
-				},
+				auth: {​​
+				'user': `${USER_API_KEY}`,
+				'pass': '',
+				'sendImmediately': false
+				}​​,
+				json: true,
+				resolveWithFullResponse: true,
 				data: {
 					projectKey,
 					name,
@@ -155,10 +158,10 @@ export const createProjectNode = createNodeDescriptor({
 			});
 
 			if (storeLocation === "context") {
-				api.addToContext(contextKey, response.data, "simple");
+				api.addToContext(contextKey, response, "simple");
 			} else {
 				// @ts-ignore
-				api.addToInput(inputKey, response.data);
+				api.addToInput(inputKey, response);
 			}
 
 		} catch (error) {

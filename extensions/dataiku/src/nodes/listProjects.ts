@@ -1,5 +1,6 @@
 import { createNodeDescriptor, INodeFunctionBaseParams } from "@cognigy/extension-tools";
-import axios from "axios";
+const rp = require('request-promise');
+
 
 export interface IOfferControlParams extends INodeFunctionBaseParams {
 	config: {
@@ -105,22 +106,26 @@ export const listProjectsNode = createNodeDescriptor({
 		const { api, input } = cognigy;
 		const { connection, tags, storeLocation, contextKey, inputKey } = config;
 		const { domain, USER_API_KEY } = connection;
+		// const token = Buffer.from(`${USER_API_KEY}`, 'utf8').toString('base64');
 
 		try {
-			const response = await axios({
-				method: 'get',
-			  	url: `${domain}public/api/projects/${tags}`,
-			  	headers: {
-				'Content-Type': 'application/json',
-				'Authorization': `Basic ${USER_API_KEY}`
-				}
+			const response = await rp({
+				method: 'GET',
+				uri: `${domain}public/api/projects/${tags}`,
+				auth: {​​
+					'user': `${USER_API_KEY}`,
+					'pass': '',
+					'sendImmediately': false
+				  }​​,
+				json: true,
+				resolveWithFullResponse: true
 			});
 
 			if (storeLocation === "context") {
-				api.addToContext(contextKey, response.data, "simple");
+				api.addToContext(contextKey, response, "simple");
 			} else {
 				// @ts-ignore
-				api.addToInput(inputKey, response.data);
+				api.addToInput(inputKey, response);
 			}
 
 		} catch (error) {
@@ -131,6 +136,5 @@ export const listProjectsNode = createNodeDescriptor({
 				api.addToInput(inputKey, error);
 			}
 		}
-
 	}
 });
