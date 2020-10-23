@@ -158,11 +158,13 @@ export const soapRequestNode = createNodeDescriptor({
 				data: xml
 			  });
 
+			let cleanedResponse = response.data.replace(/\r?\n|\r/g, "");
+
 			if (storeLocation === "context") {
-				api.addToContext(contextKey, response.data, "simple");
+				api.addToContext(contextKey, cleanedResponse, "simple");
 			} else {
 				// @ts-ignore
-				api.addToInput(inputKey, response.data);
+				api.addToInput(inputKey, cleanedResponse);
 			}
 		} catch (error) {
 			if (storeLocation === "context") {
