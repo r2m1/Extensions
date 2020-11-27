@@ -7,6 +7,7 @@ export const fourComConnection: IConnectionSchema = {
 		{ fieldName: "apiUrl" },
 		{ fieldName: "entranceId" },
 		{ fieldName: "proxyUrl" },
-		{ fieldName: "callbackUrl" }
+		{ fieldName: "cogApiUrl" },
+		{ fieldName: "cogApiKey" }
 	]
 };

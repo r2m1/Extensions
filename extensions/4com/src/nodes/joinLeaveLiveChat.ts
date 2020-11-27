@@ -1,5 +1,6 @@
 import { createNodeDescriptor, INodeFunctionBaseParams } from "@cognigy/extension-tools";
 import axios from 'axios';
+import * as qs from 'query-string';
 
 export interface IJoinLeaveLiveChatParams extends INodeFunctionBaseParams {
 	config: {
@@ -7,10 +8,12 @@ export interface IJoinLeaveLiveChatParams extends INodeFunctionBaseParams {
 			apiUrl: string;
 			entranceId: string;
 			proxyUrl: string;
-			callbackUrl: string;
+			cogApiUrl: string;
+			cogApiKey: string;
 		};
 		behavior: 'chatjoin' | 'chatleft';
 		roomId: string;
+		callbackUrl: string;
 		storeLocation: string;
 		inputKey: string;
 		contextKey: string;
@@ -53,6 +56,15 @@ export const joinLeaveLiveChatNode = createNodeDescriptor({
 			label: "Room Id",
 			type: "cognigyText",
 			defaultValue: "{{context.livechat.roomId}}",
+			params: {
+				required: true
+			}
+		},
+		{
+			key: "callbackUrl",
+			label: "Message Server Callback Url",
+			type: "cognigyText",
+			defaultValue: "https://server.com/callback",
 			params: {
 				required: true
 			}
@@ -112,7 +124,8 @@ export const joinLeaveLiveChatNode = createNodeDescriptor({
 	form: [
 		{ type: "field", key: "connection" },
 		{ type: "field", key: "behavior" },
-		{ type: "field", key: "roomId"},
+		{ type: "field", key: "roomId" },
+		{ type: "field", key: "callbackUrl" },
 		{ type: "section", key: "storageOption" },
 	],
 	appearance: {
@@ -120,16 +133,27 @@ export const joinLeaveLiveChatNode = createNodeDescriptor({
 	},
 	function: async ({ cognigy, config }: IJoinLeaveLiveChatParams) => {
 		const { api, input, context } = cognigy;
-		const { connection, behavior, roomId, storeLocation, inputKey, contextKey } = config;
-		const { apiUrl, entranceId, proxyUrl, callbackUrl } = connection;
+		const { connection, behavior, roomId, callbackUrl, storeLocation, inputKey, contextKey } = config;
+		const { apiUrl, entranceId, proxyUrl, cogApiKey, cogApiUrl } = connection;
 
 		try {
+
+			let url = qs.stringifyUrl({
+				url: `${callbackUrl}/${roomId}`, query: {
+					userId: input.userId,
+					sessionId: input.sessionId,
+					URLToken: input.URLToken,
+					cogApiKey,
+					cogApiUrl
+				}
+			});
 
 			const response = await axios({
 				method: 'post',
 				url: `${proxyUrl}${apiUrl}entrances/${entranceId}/chats/${roomId}/messages`,
 				headers: {
-					'Content-Type': 'application/x-www-form-urlencoded'
+					// 'Content-Type': 'application/x-www-form-urlencoded'
+					'Content-Type': 'application/json'
 				},
 				data: {
 					type: behavior,
@@ -142,7 +166,7 @@ export const joinLeaveLiveChatNode = createNodeDescriptor({
 							feedbackurl: '',
 							timestamp: new Date().toISOString()
 						},
-						callback: callbackUrl.replace('{chat_id}', roomId),
+						callback: url
 					}
 				}
 			});

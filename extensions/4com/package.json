@@ -19,6 +19,7 @@
   "dependencies": {
     "@cognigy/extension-tools": "^0.10.0",
     "axios": "^0.21.0",
+    "query-string": "^6.13.7",
     "tslint": "^6.1.2",
     "uuid": "^8.3.1"
   },

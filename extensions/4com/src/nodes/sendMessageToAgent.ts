@@ -1,15 +1,17 @@
 import { createNodeDescriptor, INodeFunctionBaseParams } from "@cognigy/extension-tools";
 import axios from 'axios';
-
+import * as qs from 'query-string';
 export interface ISendMessageToAgentParams extends INodeFunctionBaseParams {
 	config: {
 		connection: {
 			apiUrl: string;
 			entranceId: string;
 			proxyUrl: string;
-			callbackUrl: string;
+			cogApiUrl: string;
+			cogApiKey: string;
 		};
 		roomId: string;
+		callbackUrl: string;
 		message: string;
 		storeLocation: string;
 		inputKey: string;
@@ -34,6 +36,15 @@ export const sendMessageToAgentNode = createNodeDescriptor({
 			label: "Room Id",
 			type: "cognigyText",
 			defaultValue: "{{context.livechat.roomId}}",
+			params: {
+				required: true
+			}
+		},
+		{
+			key: "callbackUrl",
+			label: "Message Server Callback Url",
+			type: "cognigyText",
+			defaultValue: "https://server.com/callback",
 			params: {
 				required: true
 			}
@@ -103,6 +114,7 @@ export const sendMessageToAgentNode = createNodeDescriptor({
 	form: [
 		{ type: "field", key: "connection" },
 		{ type: "field", key: "roomId" },
+		{ type: "field", key: "callbackUrl" },
 		{ type: "field", key: "message" },
 		{ type: "section", key: "storageOption" },
 	],
@@ -110,11 +122,21 @@ export const sendMessageToAgentNode = createNodeDescriptor({
 		color: "#E50043"
 	},
 	function: async ({ cognigy, config }: ISendMessageToAgentParams) => {
-		const { api, context } = cognigy;
-		const { connection, roomId, message, storeLocation, inputKey, contextKey } = config;
-		const { apiUrl, entranceId, proxyUrl, callbackUrl } = connection;
+		const { api, context, input } = cognigy;
+		const { connection, roomId, message, callbackUrl, storeLocation, inputKey, contextKey } = config;
+		const { apiUrl, entranceId, proxyUrl, cogApiUrl, cogApiKey } = connection;
 
 		try {
+
+			let url = qs.stringifyUrl({
+				url: `${callbackUrl}/${roomId}`, query: {
+					userId: input.userId,
+					sessionId: input.sessionId,
+					URLToken: input.URLToken,
+					cogApiKey,
+					cogApiUrl
+				}
+			});
 
 			const response = await axios({
 				method: 'post',
@@ -131,7 +153,7 @@ export const sendMessageToAgentNode = createNodeDescriptor({
 							content: message
 						}
 					},
-					callback: callbackUrl.replace('{chat_id}', roomId),
+					callback: url,
 					origin: 'chat'
 				}
 			});
