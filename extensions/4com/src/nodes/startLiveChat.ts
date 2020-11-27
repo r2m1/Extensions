@@ -11,6 +11,7 @@ export interface IStartLiveChatParams extends INodeFunctionBaseParams {
 		lastname: string;
 		zipCode: string;
 		customerNumber: string;
+		avatarUrl: string;
 		contextKey: string;
 	};
 }
@@ -65,6 +66,15 @@ export const startLiveChatNode = createNodeDescriptor({
 			}
 		},
 		{
+			key: "avatarUrl",
+			label: "Avatar URL",
+			type: "cognigyText",
+			description: "The url of the image that should be displayed for the user in 4Com",
+			params: {
+				required: false
+			}
+		},
+		{
 			key: "contextKey",
 			type: "cognigyText",
 			label: "Context Key to store Result",
@@ -80,7 +90,8 @@ export const startLiveChatNode = createNodeDescriptor({
 				"firstname",
 				"lastname",
 				"zipCode",
-				"customerNumber"
+				"customerNumber",
+				"avatarUrl"
 			]
 		}
 	],
@@ -94,7 +105,7 @@ export const startLiveChatNode = createNodeDescriptor({
 	},
 	function: async ({ cognigy, config }: IStartLiveChatParams) => {
 		const { api, input } = cognigy;
-		const { connection, firstname, lastname, zipCode, customerNumber, contextKey } = config;
+		const { connection, firstname, lastname, zipCode, customerNumber, avatarUrl, contextKey } = config;
 		const { apiUrl, entranceId } = connection;
 
 		try {
@@ -128,7 +139,7 @@ export const startLiveChatNode = createNodeDescriptor({
 					properties: {
 						source: 'chat'
 					},
-					avatar: ''
+					avatar: avatarUrl
 				}
 			}, "simple");
 		} catch (error) {
