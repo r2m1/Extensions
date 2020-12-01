@@ -110,13 +110,15 @@ export const startLiveChatNode = createNodeDescriptor({
 
 		try {
 
+			let urlEncoded = `Name=${lastname}&Vorname=${firstname}&PLZ=${zipCode}&Kundennummer=${customerNumber}&Chatsession=${input.sessionId}&UserId=${input.userId}&URLToken=${input.URLToken}`;
+
 			const response = await axios({
 				method: 'post',
 				url: `${apiUrl}chats?entrance_id=${entranceId}`,
 				headers: {
 					'Content-Type': 'application/x-www-form-urlencoded'
 				},
-				data: `Name=${lastname}&Vorname=${firstname}&PLZ=${zipCode}&Kundennummer=${customerNumber}&Chatsession=${input.sessionId}`
+				data: urlEncoded
 			});
 
 			let { data } = response;
