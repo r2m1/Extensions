@@ -116,7 +116,7 @@ export const startLiveChatNode = createNodeDescriptor({
 				headers: {
 					'Content-Type': 'application/x-www-form-urlencoded'
 				},
-				data: `Name=${lastname}&Vorname=${firstname}&PLZ=${zipCode}&Kundennummer=${customerNumber}`
+				data: `Name=${lastname}&Vorname=${firstname}&PLZ=${zipCode}&Kundennummer=${customerNumber}&Chatsession=${input.sessionId}`
 			});
 
 			let { data } = response;
